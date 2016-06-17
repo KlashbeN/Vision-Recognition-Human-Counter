@@ -53,10 +53,11 @@ HumanCounter.prototype.initFirebase = function() {
 	this.auth = firebase.auth();
 	this.database = firebase.database();
 	this.storage = firebase.storage();
+	this.storageRef = storage.ref();
 	
 	this.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
 }
-
+// Methods for Google authentication
 HumanCounter.prototype.signIn = function() {
 	var provider = new firebase.auth.GoogleAuthProvider();
 	this.auth.signInWithPopup(provider);
@@ -84,6 +85,28 @@ HumanCounter.prototype.checkSignedIn = function() {
 	} 
 };
 
+/**
+ * Writing image data into the database.
+ * Parameters: numberOfPeople, imageName, imageData
+ */
+HumanCounter.prototype.writeNewImageData(numberOfPeople, imageName, imageDate) {
+	var imageData = {
+			numberOfPeople: numOfPeople,
+			imageName: imageName
+			imageDate: imageDate;
+	};
+
+
+var newDatabasePostKey = firebase.database().ref().child('imageData').push().key;
+var updates = {};
+updates['/imageData/' + newDatabasePostKey] = newDatabasePostKey;
+
+return firebase.database().ref().update(updates);
+}
+
+/**
+ * Firebase load image data from database.
+ */
 HumanCounter.prototype.loadImageData = function() {
 	this.imageRef = this.database.ref('imageDatas');
 	this.imageRef.off();
@@ -104,8 +127,16 @@ HumanCounter.prototype.setImageUrl = function(imageUri, imgElement) {
 			imgElement.src = imageUri;
 		}
 	};
-	
+/**
+ * Firebase Image URL Load from storage.
+ */
+HumanCounter.prototype.loadImage = function () {
+	var imageObj = storageRef.snapshot.metadata.downloadURLs[0];
+	console.log('File available to download at', url);
+};
+
 HumanCounter.prototype.displayData = function() { 
+	
 };
 
 window.onload = function() {
