@@ -4,17 +4,18 @@
 
 'use strict';
 
-//You must set the GOOGLE_APPLICATION_CREDENTIALS and GCLOUD_PROJECT
-//environment variables to run this sample. See:
-//https://github.com/GoogleCloudPlatform/gcloud-node/blob/master/docs/authentication.md
-var projectId = process.env.GCLOUD_PROJECT;
+// You must set the GOOGLE_APPLICATION_CREDENTIALS and GCLOUD_PROJECT
+// environment variables to run this sample. See:
+// https://github.com/GoogleCloudPlatform/gcloud-node/blob/master/docs/authentication.md
 
-//Initialize gcloud
+// Initialize gcloud
 var gcloud = require('gcloud')({
-projectId: projectId
+projectId: vision-recognition-1338,
+keyFilename: '../keyfile.json'
+	
 });
 
-//Get a reference to the vision component
+// Get a reference to the vision component
 var vision = gcloud.vision();
 
 var inputImage = document.getElementById('image');
@@ -35,7 +36,7 @@ function HumanCounter () {
 	this.initFirebase();
 }
 
-//Google Cloud Vision Methods
+// Google Cloud Vision Methods
 function detectFaces(inputFile, callback) {
 	  // Make a call to the Vision API to detect the faces
 	  vision.detectFaces(inputFile, function (err, faces) {
@@ -45,10 +46,11 @@ function detectFaces(inputFile, callback) {
 	    var numFaces = faces.length;
 	    console.log('Found ' + numFaces + (numFaces === 1 ? ' face' : ' faces'));
 	    callback(null, faces);
+	    
 	  });
 	}
 
-//Firebase Methods
+// Firebase Methods
 HumanCounter.prototype.initFirebase = function() {
 	this.auth = firebase.auth();
 	this.database = firebase.database();
@@ -86,21 +88,22 @@ HumanCounter.prototype.checkSignedIn = function() {
 };
 
 /**
- * Writing image data into the database.
- * Parameters: numberOfPeople, imageName, imageData
+ * Writing image data into the database. Parameters: numberOfPeople, imageName,
+ * imageData
  */
-HumanCounter.prototype.writeNewImageData(numberOfPeople, imageName, imageDate) {
+HumanCounter.prototype.writeNewImageData(numberOfPeople, imageName, imageDate, imageUrl) = function(){
 	var imageData = {
 			numberOfPeople: numOfPeople,
-			imageName: imageName
-			imageDate: imageDate;
+			imageName: imageName,
+			imageDate: imageDate,
+			url: imageUrl
 	};
 
 
 var newDatabasePostKey = firebase.database().ref().child('imageData').push().key;
 var updates = {};
 updates['/imageData/' + newDatabasePostKey] = newDatabasePostKey;
-
+console.log('File updated');
 return firebase.database().ref().update(updates);
 }
 
@@ -112,8 +115,8 @@ HumanCounter.prototype.loadImageData = function() {
 	this.imageRef.off();
 	
 	var setMessage = function(data) {
-		var value = data.value();
-		this.displayMessage
+		var val = data.val();
+		this.displayData(val.numOfPeople, val.imageName, val.imageData, val.imageURL).bind(this);
 	}
 	
 };
@@ -121,7 +124,7 @@ HumanCounter.prototype.loadImageData = function() {
 HumanCounter.prototype.setImageUrl = function(imageUri, imgElement) {
 	if (imageUri.startsWith('gs://')) {
 		this.storage.refFromURL(imageUri).getMetadata().then(function(metadata) {
-			imgElement.src = metadata.downloadURLS[0];
+			imgElement.src = metadata.downloadURLS[0]
 		});
 		} else {
 			imgElement.src = imageUri;
@@ -130,15 +133,18 @@ HumanCounter.prototype.setImageUrl = function(imageUri, imgElement) {
 /**
  * Firebase Image URL Load from storage.
  */
-HumanCounter.prototype.loadImage = function () {
-	var imageObj = storageRef.snapshot.metadata.downloadURLs[0];
-	console.log('File available to download at', url);
+var loadImageURL = function () {
+	var imageURL = storageRef.snapshot.metadata.downloadURLs[0];
+	alert("testing123");
+	console.log('File available to download at', imageURL);
+	return imageURL;
 };
 
-HumanCounter.prototype.displayData = function() { 
+HumanCounter.prototype.displayData = function(numberOfPeople, imageName, imageData, imageURL) { 
 	
 };
 
 window.onload = function() {
-	window.friendlyChat = new FriendlyChat();
+	window.HumanCounter = new HumanCounter();
+	alert("testing123");
 };
